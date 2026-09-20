@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
-import { getArtwork, getPokemon, getPokemonList, PokemonListResponse } from "@/lib/pokeapi";
+import { getArtwork, getEvolutionChain, getPokemon, getPokemonSpecies, getPokemonList, PokemonListResponse } from "@/lib/pokeapi";
 
 const PAGE_SIZE = 60;
 const listKey = ["pokemon", "list"];
@@ -42,10 +42,18 @@ export function PokemonGrid({ initialData }: { initialData: PokemonListResponse 
     return () => observer.disconnect();
   }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
-  function prefetchPokemon(name: string) {
-    void queryClient.prefetchQuery({
+  async function prefetchPokemon(name: string) {
+    const pokemon = await queryClient.fetchQuery({
       queryKey: ["pokemon", "detail", name],
       queryFn: () => getPokemon(name)
+    });
+    const species = await queryClient.fetchQuery({
+      queryKey: ["pokemon", "species", pokemon.id],
+      queryFn: () => getPokemonSpecies(pokemon.id)
+    });
+    await queryClient.prefetchQuery({
+      queryKey: ["pokemon", "evolution", pokemon.id],
+      queryFn: () => getEvolutionChain(species.evolution_chain.url)
     });
   }
 
@@ -59,8 +67,8 @@ export function PokemonGrid({ initialData }: { initialData: PokemonListResponse 
             className="pokemon-card"
             href={`/pokemon/${pokemon.name}`}
             key={pokemon.name}
-            onMouseEnter={() => prefetchPokemon(pokemon.name)}
-            onFocus={() => prefetchPokemon(pokemon.name)}
+            onMouseEnter={() => void prefetchPokemon(pokemon.name).catch(() => undefined)}
+            onFocus={() => void prefetchPokemon(pokemon.name).catch(() => undefined)}
             style={{ "--delay": `${Math.min(index % PAGE_SIZE, 12) * 35}ms` } as React.CSSProperties}
           >
             <span className="card-number">#{String(index + 1).padStart(3, "0")}</span>
