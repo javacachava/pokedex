@@ -25,6 +25,12 @@
 | Caché | `staleTime` de 24 h y `gcTime` de 7 días (`lib/query-client.ts`) |
 | Carga y errores | `loading.tsx`, `error.tsx`, `not-found.tsx` |
 
+## Diseño
+
+- Estilo Pokédex en modo oscuro: header rojo con lente azul y LEDs, tarjetas como pantallas verdes con líneas de escaneo y detalle con marco rojo.
+- Favicon de pokéball en `app/icon.svg`.
+- Diseño responsive: la grilla pasa de 5 a 3 y a 2 columnas.
+
 ## Estrategia de caché
 
 Documentada en el [README](README.md#decisiones-tecnicas). Todas las consultas usan `staleTime: 24 * 60 * 60 * 1000`; `gcTime` es de 7 días. PokeAPI también se revalida en el servidor cada 24 horas mediante `next.revalidate`.
